@@ -1,0 +1,20 @@
+# 私人数据
+personal/
+*.json
+!persona_dev.json
+!user_facts_dev.json
+
+# 向量数据库
+chroma_data/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
