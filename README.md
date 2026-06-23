@@ -1,10 +1,12 @@
-# ai_study
+# local-ai-agent
 
-个人 AI 学习项目，从零手写一个本地大模型 Agent。
+从零手写一个本地大模型 Agent，不依赖 LangChain 等框架。
+
+学习 AI Agent 的底层原理：对话引擎 → 工具调用 → 多步推理 → 向量记忆。
 
 ## 技术栈
 - Python + Ollama (qwen2.5:32b)
-- 原生 function calling
+- 原生 function calling（不用 LangChain）
 - ChromaDB 向量数据库
 
 ## 已完成
