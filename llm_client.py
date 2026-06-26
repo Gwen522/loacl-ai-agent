@@ -1,8 +1,9 @@
 import requests  # 发 HTTP 请求到 Ollama
 import json       # 解析 Ollama 返回的 JSON
+from config import MODEL_NAME
 
- #流式调用：返回生成器，逐个产出 token。聊天用（打字机效果）。
-def chat_stream(messages, model="qwen2.5:32b"):
+# 流式调用：返回生成器，逐个产出 token。聊天用（打字机效果）。
+def chat_stream(messages, model=MODEL_NAME):
     response = requests.post(
         "http://localhost:11434/api/chat",
         json={"model": model, "messages": messages, "stream": True},
@@ -15,7 +16,7 @@ def chat_stream(messages, model="qwen2.5:32b"):
         yield chunk["message"]["content"]
 
 
-def chat_sync(messages, model="qwen2.5:32b", timeout=60):
+def chat_sync(messages, model=MODEL_NAME, timeout=60):
     """
     同步调用：一次性返回完整结果字符串。
     用途：信息提取、总结等需要完整 JSON 才能解析的后台任务。
@@ -29,7 +30,7 @@ def chat_sync(messages, model="qwen2.5:32b", timeout=60):
     return response.json()["message"]["content"]
 
 
-def chat_with_tools(messages, tools, model="qwen2.5:32b", timeout=60):
+def chat_with_tools(messages, tools, model=MODEL_NAME, timeout=60):
     """
     原生 function calling 调用（非流式）。返回完整 message 对象。
     """
@@ -47,7 +48,7 @@ def chat_with_tools(messages, tools, model="qwen2.5:32b", timeout=60):
     return response.json()["message"]
 
 
-def chat_with_tools_stream(messages, tools, model="qwen2.5:32b", timeout=60):
+def chat_with_tools_stream(messages, tools, model=MODEL_NAME, timeout=60):
     """
     流式 + 原生 tools。返回 (生成器, 累加器)。
     生成器逐个产出 content token（实时打印用），累加器共享 dict 存 tool_calls。

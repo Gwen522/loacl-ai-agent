@@ -5,8 +5,8 @@
 """
 import chromadb
 import requests
+from config import EMBED_MODEL_NAME
 
-EMBED_MODEL = "nomic-embed-text"
 COLLECTION_NAME = "experiences"
 
 _client = chromadb.PersistentClient(path="./chroma_data")
@@ -17,7 +17,7 @@ def _embed(text):
     """调 Ollama 嵌入 API，返回向量列表 [0.1, 0.8, ...]"""
     resp = requests.post(
         "http://localhost:11434/api/embeddings",
-        json={"model": EMBED_MODEL, "prompt": text},
+        json={"model": EMBED_MODEL_NAME, "prompt": text},
         timeout=30,
     )
     resp.raise_for_status()
