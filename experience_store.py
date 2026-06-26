@@ -9,8 +9,15 @@ from config import EMBED_MODEL_NAME
 
 COLLECTION_NAME = "experiences"
 
-_client = chromadb.PersistentClient(path="./chroma_data")
-_collection = _client.get_or_create_collection(name=COLLECTION_NAME)
+_client = None
+_collection = None
+
+
+def init_store(db_path="./chroma_data"):
+    """切换数据库路径。必须在 add_experience / search_experiences 之前调用。"""
+    global _client, _collection
+    _client = chromadb.PersistentClient(path=db_path)
+    _collection = _client.get_or_create_collection(name=COLLECTION_NAME)
 
 
 def _embed(text):
@@ -27,9 +34,8 @@ def _embed(text):
 def add_experience(text, date_str=""):
     """
     存储一条经历。text 是经历描述，date_str 是日期(如 "2026-06-22")。
-    自动切片、嵌入、存入 ChromaDB。
     """
-    if not text.strip():
+    if not text.strip() or _collection is None:
         return
 
     vector = _embed(text)
@@ -48,7 +54,7 @@ def search_experiences(query, n_results=3):
     """
     语义搜索。返回最相关的 N 条经历，格式 [(文本, 日期), ...]
     """
-    if _collection.count() == 0:
+    if _collection is None or _collection.count() == 0:
         return []
 
     query_vec = _embed(query)

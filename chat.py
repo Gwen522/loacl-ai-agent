@@ -2,12 +2,15 @@ import gnureadline  # 修复 macOS 中文输入退格问题（必须在其他 im
 from llm_client import chat_sync, chat_with_tools, chat_with_tools_stream, chat_stream
 from extraction import extract_insights, merge_user_facts, save_persona_suggestions, extract_experiences
 from tools import TOOLS, build_ollama_tools  # Agent 工具集 + schema 构建器
-from experience_store import add_experience, search_experiences  # 向量数据库经历记忆
+from experience_store import add_experience, search_experiences, init_store  # 向量数据库
 import json  # 用 json 库解析 JSON
 import sys   # 用 sys 库读取命令行参数
 import os    # 用 os 库删文件（--clean 参数）
 
 # ========== 环境配置：根据参数选择 dev/real 模式 ==========
+
+# --quick 参数：跳过提取，纯测试对话
+SKIP_EXTRACT = "--quick" in sys.argv
 
 if "--real" in sys.argv:
     # 真实模式（和开发文件隔离）
@@ -15,6 +18,7 @@ if "--real" in sys.argv:
     user_facts_file  = "personal/user_facts.json"
     memory_file      = "personal/memory.json"
     suggestions_file = "personal/persona_suggestions.json"
+    chroma_path      = "chroma_data"
     print("[真实女友模式]")
 else:
     # 测试助手模式（默认）
@@ -25,18 +29,19 @@ else:
                 print(f"[已删除 {f}]")
             except FileNotFoundError:
                 pass
-        # 清理向量数据库
         import shutil
         try:
-            shutil.rmtree("chroma_data")
-            print("[已删除 chroma_data]")
+            shutil.rmtree("chroma_data_dev")
+            print("[已删除 chroma_data_dev]")
         except FileNotFoundError:
             pass
     persona_file     = "persona_dev.json"
     user_facts_file  = "user_facts_dev.json"
     memory_file      = "memory_dev.json"
     suggestions_file = "persona_suggestions_dev.json"
-    print("[测试助手模式]")
+    chroma_path      = "chroma_data_dev"
+    tag = "测试助手模式" + (" [快速: 跳过提取]" if SKIP_EXTRACT else "")
+    print(f"[{tag}]")
 
 # 读人设
 with open(persona_file, "r") as f:
@@ -185,6 +190,9 @@ except (FileNotFoundError, json.JSONDecodeError):
     messages = []
     print("[新对话开始]")
 
+# 初始化向量数据库路径
+init_store(chroma_path)
+
 # 构建工具 schema（一次即可，工具集不变）
 tools_schema = build_ollama_tools(TOOLS)
 
@@ -235,9 +243,9 @@ try:
         ai_reply = run_agent(system_msg, context, tools_schema)
         messages.append({"role": "assistant", "content": ai_reply})
 
-        # 每 3 轮新对话（6 条消息）触发一次增量提取
+        # 每 3 轮新对话（6 条消息）触发一次增量提取（--quick 跳过）
         new_count = len(messages) - last_extracted_count
-        if new_count >= 6:
+        if new_count >= 6 and not SKIP_EXTRACT:
             print("[正在后台提取对话信息...]")
             recent = messages[last_extracted_count:]  # 只分析新增的部分
             new_facts, persona_signals = extract_insights(recent, user_facts)
@@ -249,12 +257,12 @@ try:
             if persona_signals:
                 save_persona_suggestions(persona_signals, suggestions_file)
 
-            # 提取并存储经历
             experiences = extract_experiences(recent)
             for text, date_str in experiences:
                 add_experience(text, date_str)
 
-            last_extracted_count = len(messages)  # 记录已分析位置
+        if new_count >= 6:
+            last_extracted_count = len(messages)  # 记录已分析位置（即使跳过提取也更新）
 finally:
     # 1. 保存对话记录
     with open(memory_file, "w") as f:
@@ -263,7 +271,7 @@ finally:
 
     # 2. 退出时分析尚未提取的新消息（补充兜底）
     remaining = len(messages) - last_extracted_count
-    if remaining >= 2:  # 至少一轮完整对话才有价值
+    if remaining >= 2 and not SKIP_EXTRACT:
         print(f"[正在分析剩余 {remaining} 条消息...]")
         recent = messages[last_extracted_count:]
         new_facts, persona_signals = extract_insights(recent, user_facts)
@@ -275,7 +283,6 @@ finally:
         if persona_signals:
             save_persona_suggestions(persona_signals, suggestions_file)
 
-        # quit 时也提取经历
         experiences = extract_experiences(recent)
         for text, date_str in experiences:
             add_experience(text, date_str)

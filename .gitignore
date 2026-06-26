@@ -6,6 +6,7 @@ personal/
 
 # 向量数据库
 chroma_data/
+chroma_data_dev/
 
 # Python
 venv/
