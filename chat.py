@@ -18,10 +18,17 @@ if "--real" in sys.argv:
 else:
     DATA_DIR = "dev_data"
     if "--clean" in sys.argv:
+        # 只清对话/数据库，保留人格和用户信息
+        for f in ["memory.json", "suggestions.json", "calendar.json"]:
+            try:
+                os.remove(f"{DATA_DIR}/{f}")
+                print(f"[已清除 {DATA_DIR}/{f}]")
+            except FileNotFoundError:
+                pass
         import shutil
         try:
-            shutil.rmtree(DATA_DIR)
-            print(f"[已删除 {DATA_DIR}/]")
+            shutil.rmtree(f"{DATA_DIR}/chroma")
+            print(f"[已清除 {DATA_DIR}/chroma/]")
         except FileNotFoundError:
             pass
     tag = "测试助手模式" + (" [快速: 跳过提取]" if SKIP_EXTRACT else "")
