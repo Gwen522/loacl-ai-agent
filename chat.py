@@ -23,7 +23,7 @@ if "--real" in sys.argv:
 else:
     # 测试助手模式（默认）
     if "--clean" in sys.argv:
-        for f in ["memory_dev.json", "persona_suggestions_dev.json", "calendar.json"]:
+        for f in ["memory_dev.json", "persona_suggestions_dev.json", "calendar.json", "user_facts_dev.json"]:
             try:
                 os.remove(f)
                 print(f"[已删除 {f}]")
