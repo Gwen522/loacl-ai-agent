@@ -36,9 +36,16 @@ suggestions_file = f"{DATA_DIR}/suggestions.json"
 calendar_path    = f"{DATA_DIR}/calendar.json"
 chroma_path      = f"{DATA_DIR}/chroma"
 
-# 读人设
-with open(persona_file, "r") as f:
-    persona = json.load(f)
+# 读人设（文件不存在则自动创建默认）
+try:
+    with open(persona_file, "r") as f:
+        persona = json.load(f)
+except FileNotFoundError:
+    persona = {"name": "银月", "persona": "是用户的助手。", "rules": []}
+    os.makedirs(os.path.dirname(persona_file), exist_ok=True)
+    with open(persona_file, "w") as f:
+        json.dump(persona, f, ensure_ascii=False, indent=2)
+    print(f"[自动创建 {persona_file}]")
 print(f"[加载人设: {persona_file}]")
 
 # 读用户信息（文件不存在则自动创建空白）
