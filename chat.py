@@ -10,41 +10,31 @@ import os    # 用 os 库删文件（--clean 参数）
 
 # ========== 环境配置：根据参数选择 dev/real 模式 ==========
 
-# --quick 参数：跳过提取，纯测试对话
 SKIP_EXTRACT = "--quick" in sys.argv
 
 if "--real" in sys.argv:
-    # 真实模式（和开发文件隔离）
-    persona_file     = "personal/persona.json"
-    user_facts_file  = "personal/user_facts.json"
-    memory_file      = "personal/memory.json"
-    suggestions_file = "personal/persona_suggestions.json"
-    chroma_path      = "chroma_data"
-    calendar_path    = "calendar.json"
+    DATA_DIR = "personal"
     print("[真实女友模式]")
 else:
-    # 测试助手模式（默认）
+    DATA_DIR = "dev_data"
     if "--clean" in sys.argv:
-        for f in ["memory_dev.json", "persona_suggestions_dev.json", "calendar_dev.json", "user_facts_dev.json"]:
-            try:
-                os.remove(f)
-                print(f"[已删除 {f}]")
-            except FileNotFoundError:
-                pass
         import shutil
         try:
-            shutil.rmtree("chroma_data_dev")
-            print("[已删除 chroma_data_dev]")
+            shutil.rmtree(DATA_DIR)
+            print(f"[已删除 {DATA_DIR}/]")
         except FileNotFoundError:
             pass
-    persona_file     = "persona_dev.json"
-    user_facts_file  = "user_facts_dev.json"
-    memory_file      = "memory_dev.json"
-    suggestions_file = "persona_suggestions_dev.json"
-    chroma_path      = "chroma_data_dev"
-    calendar_path    = "calendar_dev.json"
     tag = "测试助手模式" + (" [快速: 跳过提取]" if SKIP_EXTRACT else "")
     print(f"[{tag}]")
+
+# 统一路径：所有数据文件都在 DATA_DIR/ 下
+os.makedirs(DATA_DIR, exist_ok=True)
+persona_file     = f"{DATA_DIR}/persona.json"
+user_facts_file  = f"{DATA_DIR}/user_facts.json"
+memory_file      = f"{DATA_DIR}/memory.json"
+suggestions_file = f"{DATA_DIR}/suggestions.json"
+calendar_path    = f"{DATA_DIR}/calendar.json"
+chroma_path      = f"{DATA_DIR}/chroma"
 
 # 读人设
 with open(persona_file, "r") as f:

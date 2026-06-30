@@ -1,12 +1,6 @@
-# 私人数据
+# 数据目录
+dev_data/
 personal/
-*.json
-!persona_dev.json
-!user_facts_dev.json
-
-# 向量数据库
-chroma_data/
-chroma_data_dev/
 
 # Python
 venv/

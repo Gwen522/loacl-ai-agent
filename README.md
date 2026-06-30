@@ -20,7 +20,7 @@
 ## 项目结构
 ```
 ├── chat.py              # 主循环 + Agent 循环
-├── config.py            # 模型名集中管理（换模型只改这里）
+├── config.py            # 模型名集中管理
 ├── llm_client.py        # LLM 通信（流式/同步/原生 tools）
 ├── extraction.py        # 对话事实/经历提取
 ├── experience_store.py  # 向量数据库经历记忆（ChromaDB）
@@ -30,9 +30,14 @@
 │   ├── time.py          #   当前时间
 │   ├── calculator.py    #   安全计算器
 │   └── calendar.py      #   日历（添加/查询/删除）
-├── persona_dev.json     # 测试人设（助手·银月）
-├── user_facts_dev.json  # 测试用户数据
-└── personal/            # 私人数据（不会提交 Git）
+├── dev_data/            # 测试数据（gitignore，不被提交）
+│   ├── persona.json
+│   ├── user_facts.json
+│   └── ...
+└── personal/            # 真实数据（gitignore，不被提交）
+    ├── persona.json
+    ├── user_facts.json
+    └── ...
 ```
 
 ## 运行
