@@ -38,12 +38,15 @@
 ## 运行
 
 ```bash
-# 前置：安装依赖 & 拉模型
+# ① 激活虚拟环境（仅第一次，终端出现 (venv) 即成功）
+source venv/bin/activate
+
+# ② 安装依赖 & 拉模型（仅第一次）
 pip install -r requirements.txt
 ollama pull qwen2.5:32b
 ollama pull nomic-embed-text
 
-# 四种模式：
+# ③ 四种运行模式：
 python3 chat.py                  # ① 测试模式（保留上次对话和记忆）
 python3 chat.py --clean          # ② 清空重测（删记忆、日历、向量库）
 python3 chat.py --clean --quick  # ③ 快速测试（只对话，不提取事实/经历，秒 quit）
