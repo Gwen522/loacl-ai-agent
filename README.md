@@ -20,23 +20,47 @@
 ## 项目结构
 ```
 ├── chat.py              # 主循环 + Agent 循环
-├── llm_client.py        # LLM 通信 (流式/同步/原生 tools)
+├── config.py            # 模型名集中管理（换模型只改这里）
+├── llm_client.py        # LLM 通信（流式/同步/原生 tools）
 ├── extraction.py        # 对话事实/经历提取
-├── experience_store.py  # 向量数据库经历记忆
+├── experience_store.py  # 向量数据库经历记忆（ChromaDB）
 ├── tools/               # Agent 工具包
-│   ├── __init__.py
-│   ├── weather.py
-│   ├── time.py
-│   ├── calculator.py
-│   └── calendar.py
-├── persona_dev.json     # 测试人设
-└── user_facts_dev.json  # 测试数据
+│   ├── __init__.py      #   工具注册表
+│   ├── weather.py       #   天气查询
+│   ├── time.py          #   当前时间
+│   ├── calculator.py    #   安全计算器
+│   └── calendar.py      #   日历（添加/查询/删除）
+├── persona_dev.json     # 测试人设（助手·银月）
+├── user_facts_dev.json  # 测试用户数据
+└── personal/            # 私人数据（不会提交 Git）
 ```
 
 ## 运行
+
 ```bash
-# 需要先启动 Ollama
-python3 chat.py                  # 测试模式
-python3 chat.py --clean          # 清空重来
-python3 chat.py --real           # 真实模式 (数据存在 personal/)
+# 前置：安装依赖 & 拉模型
+pip install -r requirements.txt
+ollama pull qwen2.5:32b
+ollama pull nomic-embed-text
+
+# 四种模式：
+python3 chat.py                  # ① 测试模式（保留上次对话和记忆）
+python3 chat.py --clean          # ② 清空重测（删记忆、日历、向量库）
+python3 chat.py --clean --quick  # ③ 快速测试（只对话，不提取事实/经历，秒 quit）
+python3 chat.py --real           # ④ 真实模式（数据存在 personal/，测试环境保持干净）
 ```
+
+| 参数 | 作用 | 适用场景 |
+|---|---|---|
+| （无） | 继续上次对话 | 正常测试 |
+| `--clean` | 清空所有测试数据 | 重头开始 |
+| `--clean --quick` | 清空 + 跳过提取 | 快速验证对话效果 |
+| `--real` | 切换真实数据 | 正式使用 |
+
+## 换模型
+
+改一行：`config.py` 里的 `MODEL_NAME`。只要 Ollama 里有那个模型就能跑。
+
+## 运行要求
+- Ollama 运行在 `localhost:11434`
+- Python 3.9+
