@@ -10,5 +10,9 @@
   "interests": [
     "骑行",
     "爬山"
+  ],
+  "skills": [
+    "学习Python",
+    "编写agent框架"
   ]
 }

@@ -2,6 +2,7 @@ import gnureadline  # 修复 macOS 中文输入退格问题（必须在其他 im
 from llm_client import chat_sync, chat_with_tools, chat_with_tools_stream, chat_stream
 from extraction import extract_insights, merge_user_facts, save_persona_suggestions, extract_experiences
 from tools import TOOLS, build_ollama_tools  # Agent 工具集 + schema 构建器
+from tools.calendar import set_calendar_path  # 日历路径隔离
 from experience_store import add_experience, search_experiences, init_store  # 向量数据库
 import json  # 用 json 库解析 JSON
 import sys   # 用 sys 库读取命令行参数
@@ -19,11 +20,12 @@ if "--real" in sys.argv:
     memory_file      = "personal/memory.json"
     suggestions_file = "personal/persona_suggestions.json"
     chroma_path      = "chroma_data"
+    calendar_path    = "calendar.json"
     print("[真实女友模式]")
 else:
     # 测试助手模式（默认）
     if "--clean" in sys.argv:
-        for f in ["memory_dev.json", "persona_suggestions_dev.json", "calendar.json", "user_facts_dev.json"]:
+        for f in ["memory_dev.json", "persona_suggestions_dev.json", "calendar_dev.json", "user_facts_dev.json"]:
             try:
                 os.remove(f)
                 print(f"[已删除 {f}]")
@@ -40,6 +42,7 @@ else:
     memory_file      = "memory_dev.json"
     suggestions_file = "persona_suggestions_dev.json"
     chroma_path      = "chroma_data_dev"
+    calendar_path    = "calendar_dev.json"
     tag = "测试助手模式" + (" [快速: 跳过提取]" if SKIP_EXTRACT else "")
     print(f"[{tag}]")
 
@@ -190,8 +193,9 @@ except (FileNotFoundError, json.JSONDecodeError):
     messages = []
     print("[新对话开始]")
 
-# 初始化向量数据库路径
+# 初始化路径隔离
 init_store(chroma_path)
+set_calendar_path(calendar_path)
 
 # 构建工具 schema（一次即可，工具集不变）
 tools_schema = build_ollama_tools(TOOLS)

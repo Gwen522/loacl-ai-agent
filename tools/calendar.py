@@ -1,9 +1,15 @@
-"""日历工具。数据持久化到 calendar.json，支持添加、查询、删除。"""
+"""日历工具。数据持久化，支持添加、查询、删除。"""
 import json
 import os
 from datetime import date
 
 CALENDAR_FILE = "calendar.json"
+
+
+def set_calendar_path(path):
+    """切换日历文件路径（dev/real 隔离用）"""
+    global CALENDAR_FILE
+    CALENDAR_FILE = path
 
 
 def _read():
