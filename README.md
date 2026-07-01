@@ -23,15 +23,27 @@
 ```
 ├── chat.py              # 终端对话入口
 ├── server.py            # Web 后端 (FastAPI + SSE)
-├── agent_core.py        # Agent 核心逻辑（终端/Web 共用）
-├── session.py           # 会话管理（加载/保存/压缩，共用）
-├── llm_client.py        # LLM 通信
+├── agent_core.py        # Agent 核心（run_agent / build_system_msg）
+├── session.py           # 会话管理（加载/保存/压缩）
+├── llm_client.py        # LLM 通信（流式/同步/原生 tools）
 ├── config.py            # 模型名集中管理
-├── extraction.py        # 对话信息提取
+├── extraction.py        # 事实提取 + 经历提取
 ├── experience_store.py  # 向量记忆 (ChromaDB)
 ├── tools/               # Agent 工具包
-├── frontend/            # Vue 3 + TS 前端
-│   └── src/components/  # ChatWindow / ChatMessage / ChatInput
+│   ├── __init__.py      #   注册表 + Ollama schema 构建
+│   ├── weather.py       #   天气查询 (wttr.in)
+│   ├── time.py          #   当前时间
+│   ├── calculator.py    #   安全计算器
+│   └── calendar.py      #   日历（添加/查询/删除）
+├── frontend/            # Vue 3 + TypeScript + Vite
+│   ├── index.html
+│   ├── vite.config.ts
+│   └── src/
+│       ├── App.vue
+│       └── components/
+│           ├── ChatWindow.vue
+│           ├── ChatMessage.vue
+│           └── ChatInput.vue
 ├── dev_data/            # 测试数据 (gitignore)
 └── personal/            # 真实数据 (gitignore)
 ```
