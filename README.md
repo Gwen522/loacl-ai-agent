@@ -5,65 +5,74 @@
 学习 AI Agent 的底层原理：对话引擎 → 工具调用 → 多步推理 → 向量记忆。
 
 ## 技术栈
-- Python + Ollama (qwen2.5:32b)
+- 后端: Python + Ollama (qwen2.5:32b) + FastAPI
+- 前端: Vue 3 + TypeScript + Vite
+- 向量库: ChromaDB + nomic-embed-text
 - 原生 function calling（不用 LangChain）
-- ChromaDB 向量数据库
 
 ## 已完成
 - [x] 终端流式对话 + 记忆持久化
-- [x] 用户事实自动提取 (user_facts.json)
+- [x] 用户事实自动提取
 - [x] Agent 工具调用 (天气 / 时间 / 计算器 / 日历)
 - [x] 上下文压缩 (超 4 轮自动摘要)
 - [x] Plan-and-Execute 多步推理
 - [x] 经历记忆 + 语义检索 (ChromaDB)
+- [x] Web 前端 (Vue 3 + TS)
 
 ## 项目结构
 ```
-├── chat.py              # 主循环 + Agent 循环
+├── chat.py              # 终端对话入口
+├── server.py            # Web 后端 (FastAPI + SSE)
+├── agent_core.py        # Agent 核心逻辑（终端/Web 共用）
+├── session.py           # 会话管理（加载/保存/压缩，共用）
+├── llm_client.py        # LLM 通信
 ├── config.py            # 模型名集中管理
-├── llm_client.py        # LLM 通信（流式/同步/原生 tools）
-├── extraction.py        # 对话事实/经历提取
-├── experience_store.py  # 向量数据库经历记忆（ChromaDB）
+├── extraction.py        # 对话信息提取
+├── experience_store.py  # 向量记忆 (ChromaDB)
 ├── tools/               # Agent 工具包
-│   ├── __init__.py      #   工具注册表
-│   ├── weather.py       #   天气查询
-│   ├── time.py          #   当前时间
-│   ├── calculator.py    #   安全计算器
-│   └── calendar.py      #   日历（添加/查询/删除）
-├── dev_data/            # 测试数据（gitignore，不被提交）
-│   ├── persona.json
-│   ├── user_facts.json
-│   └── ...
-└── personal/            # 真实数据（gitignore，不被提交）
-    ├── persona.json
-    ├── user_facts.json
-    └── ...
+├── frontend/            # Vue 3 + TS 前端
+│   └── src/components/  # ChatWindow / ChatMessage / ChatInput
+├── dev_data/            # 测试数据 (gitignore)
+└── personal/            # 真实数据 (gitignore)
 ```
 
-## 运行
+## 运行 (Web 版)
 
 ```bash
-# ① 激活虚拟环境（仅第一次，终端出现 (venv) 即成功）
+# 前置：安装依赖 & 拉模型（仅第一次）
 source venv/bin/activate
-
-# ② 安装依赖 & 拉模型（仅第一次）
 pip install -r requirements.txt
 ollama pull qwen2.5:32b
 ollama pull nomic-embed-text
 
-# ③ 四种运行模式：
-python3 chat.py                  # ① 测试模式（保留上次对话和记忆）
-python3 chat.py --clean          # ② 清空重测（删记忆、日历、向量库）
-python3 chat.py --clean --quick  # ③ 快速测试（只对话，不提取事实/经历，秒 quit）
-python3 chat.py --real           # ④ 真实模式（数据存在 personal/，测试环境保持干净）
+# 前端依赖
+cd frontend
+npm install                    # 装 Vue / Vite / TS
+cd ..
+
+# 终端 1: 启动后端
+uvicorn server:app --reload --port 8000
+
+# 终端 2: 启动前端
+cd frontend
+npm run dev                    # 浏览器打开 http://localhost:5173
 ```
 
-| 参数 | 作用 | 适用场景 |
-|---|---|---|
-| （无） | 继续上次对话 | 正常测试 |
-| `--clean` | 清空所有测试数据 | 重头开始 |
-| `--clean --quick` | 清空 + 跳过提取 | 快速验证对话效果 |
-| `--real` | 切换真实数据 | 正式使用 |
+## 运行 (终端版)
+
+```bash
+python3 chat.py                  # 测试模式（保留历史）
+python3 chat.py --clean          # 清空重测
+python3 chat.py --clean --quick  # 快速测试（跳过提取）
+python3 chat.py --real           # 真实模式（数据在 personal/）
+```
+
+| 参数 | 作用 |
+|---|---|
+| （无） | 继续上次对话 |
+| `--clean` | 清空测试数据 |
+| `--quick` | 跳过事实提取 |
+| `--real` | 切换正式数据 |
 
 ## 换模型
 
