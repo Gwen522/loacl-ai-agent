@@ -54,15 +54,23 @@ def run_agent(system_msg, context_messages, tools_schema, on_token=None, on_tool
                 agent_msgs.append({"role": "tool", "content": str(raw)})
         else:
             content = acc["content"] or ""
-            if content and any(w in content for w in ["总结", "建议", "最终", "祝", "希望", "再见"]):
-                return content
-            if content:
-                agent_msgs.append({"role": "assistant", "content": content})
-                agent_msgs.append({"role": "system", "content": "请继续执行。如果需要调用工具，立即调用。"})
-            else:
+            if not content:
                 return ""
 
-    return agent_msgs[-1].get("content", "")
+            # 判断是不是最终答案
+            is_final = any(w in content for w in ["总结", "建议", "最终", "祝", "希望", "再见"])
+            if is_final or len(content) > 50:  # 长回复大概率是最终答案
+                return content
+
+            # 短内容且无工具 → 可能是过渡句 → 推一把
+            agent_msgs.append({"role": "assistant", "content": content})
+            agent_msgs.append({"role": "system", "content": "请继续执行。如果需要调用工具，立即调用。"})
+
+    # 兜底: 返回最后一条 assistant 消息，不要返回 system 消息
+    for m in reversed(agent_msgs):
+        if m.get("role") == "assistant":
+            return m.get("content", "")
+    return ""
 
 
 def build_system_msg(persona, user_facts, history_notes=None, context_messages=None):
