@@ -1,2 +1,4 @@
 requests
 chromadb
+fastapi
+uvicorn[standard]
