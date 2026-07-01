@@ -61,6 +61,29 @@ ai_study/
 └── .codebuddy/skills/
 ```
 
+## 架构职责边界
+
+### agent_core.py — Agent 核心（纯逻辑，无 IO）
+- `run_agent(system_msg, context, tools_schema, on_token, on_tool)` — agent 循环
+- `build_system_msg(persona, facts, history_notes, context)` — 构建 system prompt
+- **不 print、不读文件、不知道"终端还是 Web"**
+
+### chat.py — 终端版
+- 模式解析 (--real / --clean / --quick)
+- 加载/保存 persona、user_facts、memory JSON
+- 上下文压缩 (compress_history, history_notes)
+- 用户输入 (input) + 终端展示 (💭🔧 回调)
+- 定期提取 (user_facts + 经历) 和 quit 提取
+- 调用 agent_core.run_agent()
+
+### server.py — Web 版
+- FastAPI 路由 /api/chat
+- 前端模式按钮 → mode 参数 → 选择 dev_data/ 或 personal/
+- 每次请求加载 persona + user_facts
+- SSE 流式推送 (token/tool/done/error 事件)
+- 调用 agent_core.run_agent()
+- (暂未挂提取逻辑)
+
 ## Current Features
 
 ### Agent & Tools
