@@ -58,9 +58,9 @@ const send = async (text: string) => {
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue
         const evt = JSON.parse(line.slice(6))
-        if (evt.type === 'token') ai.thinking += evt.data
+        if (evt.type === 'token') ai.content += evt.data        // 流式直接进内容
         else if (evt.type === 'tool') ai.tools.push(evt.data)
-        else if (evt.type === 'done') { ai.thinking = ''; ai.content = evt.data }
+        else if (evt.type === 'done') { if (!ai.content) ai.content = evt.data }
         else if (evt.type === 'error') ai.content = '出错: ' + evt.data
         scrollBottom()
       }
